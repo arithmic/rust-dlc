@@ -399,7 +399,6 @@ where
         let contract: OfferedContract =
             OfferedContract::try_from_offer_dlc(offered_message, counter_party, keys_id)?;
         contract.validate()?;
-
         if self.store.get_contract(&contract.id)?.is_some() {
             return Err(Error::InvalidParameters(
                 "Contract with identical id already exists".to_string(),

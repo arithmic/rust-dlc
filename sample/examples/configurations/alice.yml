@@ -1,11 +1,11 @@
 bitcoinInfo:
-  rpcUsername: testuser
-  rpcPassword: lq6zequb-gYTdF2_ZEUtr8ywTXzLYtknzWU4nV8uVoo=
+  rpcUsername: arithmic
+  rpcPassword: arithmic
   rpcPort: 18443
-  rpcHost: localhost
+  rpcHost: 14.143.177.166
   wallet: alice
 storageDirPath: './dlc_sample_alice'
 networkConfiguration:
   peerListeningPort: 9000
 oracleConfig:
-  host: 'http://localhost:8080/'
+  host: 'http://14.143.177.166:8080/'

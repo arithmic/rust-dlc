@@ -292,6 +292,7 @@ impl Storage for SledStorageProvider {
     }
 
     fn get_contract_offers(&self) -> Result<Vec<OfferedContract>, Error> {
+        println!("In get contract offers");
         self.get_data_with_prefix(
             &self.contract_tree()?,
             &[ContractPrefix::Offered.into()],

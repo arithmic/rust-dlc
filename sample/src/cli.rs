@@ -198,6 +198,7 @@ pub(crate) async fn poll_for_user_input(
                         .filter(|x| !x.is_offer_party)
                     {
                         let offer_id = hex_str(&offer.id);
+                        println!("offer id: {:?}", offer_id);
                         let offer_json_path = format!("{}/{}.json", offers_path, offer_id);
                         if fs::metadata(&offer_json_path).is_err() {
                             let offer_str = serde_json::to_string_pretty(&offer)
@@ -599,6 +600,7 @@ fn process_incoming_messages(
 
     for (node_id, message) in messages {
         println!("Processing message from {}", node_id);
+        println!("message: {:#?}", message);
         let resp = dlc_manager
             .lock()
             .unwrap()

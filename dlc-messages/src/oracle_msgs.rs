@@ -222,7 +222,8 @@ impl OracleEvent {
             EventDescriptor::EnumEvent(_) => 1,
             EventDescriptor::DigitDecompositionEvent(d) => d.nb_digits as usize,
         };
-
+        println!("expected nb nonces: {:?}", expected_nb_nonces);
+        println!("oracle nonces len: {:?}", self.oracle_nonces.len());
         if expected_nb_nonces == self.oracle_nonces.len() {
             Ok(())
         } else {
