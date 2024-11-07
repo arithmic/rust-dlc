@@ -376,15 +376,13 @@ impl OfferDlc {
 
         let closest_maturity_date = self.contract_info.get_closest_maturity_date();
         println!("closest maturity date: {:?}", closest_maturity_date);
-        // check cet lock time or how to change the closest maturity date
         let valid_dates = self.cet_locktime <= closest_maturity_date
             && closest_maturity_date + min_timeout_interval <= self.refund_locktime
             && self.refund_locktime <= closest_maturity_date + max_timeout_interval;
         println!("valid dates: {:?}", valid_dates);
-        // if !valid_dates {
-        //     return Err(Error::InvalidArgument);
-        // }
-        println!("Returning Okay");
+        if !valid_dates {
+            return Err(Error::InvalidArgument);
+        }
         Ok(())
     }
 }

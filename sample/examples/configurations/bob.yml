@@ -8,4 +8,4 @@ storageDirPath: './dlc_sample_bob'
 networkConfiguration:
   peerListeningPort: 9001
 oracleConfig:
-  host: 'http://14.143.177.166:8080/'
+  host: 'http://14.143.177.166:8081/'

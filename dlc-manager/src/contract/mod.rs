@@ -235,6 +235,7 @@ impl ContractDescriptor {
                         }
                     }
                 }
+                println!("contract descriptor: {:?}", self);
                 match self {
                     ContractDescriptor::Enum(ed) => ed.validate(ee),
                     _ => Err(Error::InvalidParameters(

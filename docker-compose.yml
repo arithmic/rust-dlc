@@ -1,21 +1,5 @@
 version: "3.4"
 services:
-  ### BITCOIND
-  bitcoind:
-    image: polarlightning/bitcoind:27.0
-    container_name: bitcoin-node
-    command: |
-      -conf=/config/default.conf
-      -printtoconsole
-      -regtest
-    ports:
-      # regtest ports
-      - 18443:18443
-      - 18444:18444
-    volumes:
-      - bitcoind-data:/home/bitcoin/.bitcoin
-      - ./testconfig/config:/config
-      - ./scripts:/scripts
   electrs:
     image: ghcr.io/cryptogarageinc/electrs:v0.4.12-bitcoin
     command: |

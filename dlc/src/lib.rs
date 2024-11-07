@@ -84,6 +84,16 @@ macro_rules! checked_add {
     };
 }
 
+/// Represent the data required for the bridge transaction in Arithmic Network
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "use-serde", derive(Serialize, Deserialize))]
+pub struct BridgeTransactionInfo {
+    /// User l2 address
+    pub l2_address: String,
+    /// Transfer amount
+    pub amount: u64,
+}
+
 /// Represents the payouts for a unique contract outcome. Offer party represents
 /// the initiator of the contract while accept party represents the party
 /// accepting the contract.
@@ -392,6 +402,8 @@ pub fn create_dlc_transactions(
         fund_output_serial_id,
         0,
     )?;
+
+    println!("funding transaction: {:#?}", fund_tx);
     let fund_outpoint = OutPoint {
         txid: fund_tx.compute_txid(),
         vout: util::get_output_for_script_pubkey(&fund_tx, &funding_script_pubkey.to_p2wsh())
@@ -628,20 +640,60 @@ pub fn create_funding_transaction(
         script_pubkey: funding_script_pubkey.to_p2wsh(),
     };
 
-    let output: Vec<TxOut> = {
-        let serial_ids = vec![
-            fund_output_serial_id,
-            offer_change_serial_id,
-            accept_change_serial_id,
-        ];
-        util::discard_dust(
-            util::order_by_serial_ids(
-                vec![fund_tx_out, offer_change_output, accept_change_output],
-                &serial_ids,
-            ),
-            DUST_LIMIT,
-        )
+    let mut output: Vec<TxOut> = Vec::new();
+    let bridge_transaction = BridgeTransactionInfo {
+        l2_address: "0227ef5e7f93405e424f0d488a2d592d3a7fe445".to_owned(),
+        amount: output_amount,
     };
+
+    let bridge_transaction_bytes = serde_json::to_vec(&bridge_transaction)
+        .expect("Unable to serialize bridge transaction data");
+    println!("Bridge transaction data: {:?}", bridge_transaction_bytes);
+    println!(
+        "Bridge transaction data len: {:?}",
+        bridge_transaction_bytes.len()
+    );
+
+    // Convert bytes to hex
+    let hex_string = hex::encode(&bridge_transaction_bytes);
+    println!("bridge transaction data hex: {}", hex_string);
+
+    // splitting the bridge transaction bytes, unable to push all at once
+    // TODO: try different approach
+    let mut push_bytes_1 = [0_u8; 44];
+    for i in 0..44 {
+        push_bytes_1[i] = bridge_transaction_bytes[i];
+    }
+
+    let mut push_bytes_2 = [0_u8; 32];
+    for i in 44..bridge_transaction_bytes.len() {
+        push_bytes_2[i - 44] = bridge_transaction_bytes[i];
+    }
+
+    // Create the OP_RETURN script with bridge transaction data
+    let op_return_script = Builder::new()
+        .push_opcode(opcodes::all::OP_RETURN)
+        .push_slice(push_bytes_1) // Add bridge transaction data
+        .push_slice(push_bytes_2)
+        .into_script();
+
+    output.push(TxOut {
+        value: Amount::from_sat(0),
+        script_pubkey: op_return_script,
+    });
+
+    let serial_ids = vec![
+        fund_output_serial_id,
+        offer_change_serial_id,
+        accept_change_serial_id,
+    ];
+    output.extend(util::discard_dust(
+        util::order_by_serial_ids(
+            vec![fund_tx_out, offer_change_output, accept_change_output],
+            &serial_ids,
+        ),
+        DUST_LIMIT,
+    ));
 
     let input = util::order_by_serial_ids(
         [offer_inputs, accept_inputs].concat(),

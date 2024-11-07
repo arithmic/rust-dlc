@@ -1,0 +1,37 @@
+{
+    "offerCollateral": 0,
+    "acceptCollateral": 100000000,
+    "feeRate": 2,
+    "contractInfos": [
+        {
+            "contractDescriptor": {
+                "enum": {
+                    "outcomePayouts": [
+                        {
+                            "outcome": "1",
+                            "payout": {
+                                "offer": 100000000,
+                                "accept": 0
+                            }
+                        },
+                        {
+                            "outcome": "0",
+                            "payout": {
+                                "offer": 0,
+                                "accept": 100000000
+                            }
+                        }
+                    ]
+                }
+            },
+            "oracles": {
+                "publicKeys": [
+                    "0d829c1cc556aa59060df5a9543c5357199ace5db9bcd5a8ddd6ee2fc7b6d174"
+                ],
+                "eventId": "lock_funds",
+                "threshold": 1
+            }
+        }
+    ]
+  }
+  

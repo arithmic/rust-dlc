@@ -22,6 +22,7 @@ use crate::{ChannelId, ContractId, ContractSignerProvider};
 use bitcoin::absolute::Height;
 use bitcoin::consensus::encode::serialize_hex;
 use bitcoin::consensus::Decodable;
+use bitcoin::hashes::Hash;
 use bitcoin::Address;
 use bitcoin::{OutPoint, Transaction};
 use dlc_messages::channel::{
@@ -29,18 +30,23 @@ use dlc_messages::channel::{
     RenewFinalize, RenewOffer, RenewRevoke, SettleAccept, SettleConfirm, SettleFinalize,
     SettleOffer, SignChannel,
 };
-use dlc_messages::oracle_msgs::{OracleAnnouncement, OracleAttestation};
+use dlc_messages::oracle_msgs::{
+    EnumEventDescriptor, OracleAnnouncement, OracleAttestation, OracleEvent,
+};
 use dlc_messages::{AcceptDlc, Message as DlcMessage, OfferDlc, SignDlc};
 use hex::DisplayHex;
 use lightning::chain::chaininterface::FeeEstimator;
 use lightning::ln::chan_utils::{
     build_commitment_secret, derive_private_key, derive_private_revocation_key,
 };
+use lightning::util::ser::Writeable;
 use log::{error, warn};
-use secp256k1_zkp::XOnlyPublicKey;
+use secp256k1_zkp::rand::{thread_rng, RngCore};
+use secp256k1_zkp::Keypair;
 use secp256k1_zkp::{
     ecdsa::Signature, All, EcdsaAdaptorSignature, PublicKey, Secp256k1, SecretKey,
 };
+use secp256k1_zkp::{Message, XOnlyPublicKey};
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::string::ToString;
@@ -331,6 +337,11 @@ where
             &self.blockchain,
         )?;
 
+        println!(
+            "funding transaction id: {:?}",
+            accepted_contract.dlc_transactions.fund.compute_txid()
+        );
+        
         self.wallet.import_address(&Address::p2wsh(
             &accepted_contract.dlc_transactions.funding_script_pubkey,
             self.blockchain.get_network()?,
@@ -474,14 +485,74 @@ where
         oracle_inputs: &OracleInput,
     ) -> Result<Vec<OracleAnnouncement>, Error> {
         let mut announcements = Vec::new();
-        for pubkey in &oracle_inputs.public_keys {
-            let oracle = self
-                .oracles
-                .get(pubkey)
-                .ok_or_else(|| Error::InvalidParameters("Unknown oracle public key".to_string()))?;
-            announcements.push(oracle.get_announcement(&oracle_inputs.event_id)?.clone());
-        }
+        // for pubkey in &oracle_inputs.public_keys {
+        //     let oracle = self
+        //         .oracles
+        //         .get(pubkey)
+        //         .ok_or_else(|| Error::InvalidParameters("Unknown oracle public key".to_string()))?;
+        //     println!("oracle input event id: {:?}", oracle_inputs.event_id);
+        //     announcements.push(oracle.get_announcement(&oracle_inputs.event_id)?.clone());
+        // }
 
+        // Initialize secp256k1 context
+        let secp = Secp256k1::new();
+
+        // 1. Generate the oracle's key pair (public and private key)
+        let oracle_secret_key = SecretKey::new(&mut thread_rng());
+        let oracle_public_key = PublicKey::from_secret_key(&secp, &oracle_secret_key);
+        println!("Oracle Public Key: {:?}", oracle_public_key);
+
+        // 2. Pre-commit to nonces for each possible outcome
+        // Outcome 1: "0"
+        let mut nonce1_bytes = [0u8; 32];
+        thread_rng().fill_bytes(&mut nonce1_bytes);
+        let nonce1 = SecretKey::from_slice(&nonce1_bytes).expect("32 bytes, within curve order");
+        let nonce1_pubkey = PublicKey::from_secret_key(&secp, &nonce1);
+        println!("Nonce 1 Public Key (0): {:?}", nonce1_pubkey);
+
+        // Outcome 2: "1"
+        let mut nonce2_bytes = [0u8; 32];
+        thread_rng().fill_bytes(&mut nonce2_bytes);
+        let nonce2 = SecretKey::from_slice(&nonce2_bytes).expect("32 bytes, within curve order");
+        let nonce2_pubkey = PublicKey::from_secret_key(&secp, &nonce2);
+        println!("Nonce 2 Public Key (1): {:?}", nonce2_pubkey);
+
+        let oracle_event = OracleEvent {
+            oracle_nonces: vec![nonce1_pubkey.into()],
+            event_maturity_epoch: 1735689599,
+            event_descriptor: dlc_messages::oracle_msgs::EventDescriptor::EnumEvent(
+                EnumEventDescriptor {
+                    outcomes: vec!["0".to_owned(), "1".to_owned()],
+                },
+            ),
+            event_id: "lock_funds".to_owned(),
+        };
+        let mut event_hex = Vec::new();
+        oracle_event
+            .write(&mut event_hex)
+            .expect("Error writing oracle event");
+
+        let hash = bitcoin::hashes::sha256::Hash::hash(&event_hex);
+        let message = Message::from_digest(hash.to_byte_array());
+
+        // 4. Choose the nonce based on the observed outcome
+        let selected_nonce = nonce1_bytes; // Choose the corresponding nonce based on observed outcome
+        let keypair = Keypair::from_secret_key(&secp, &oracle_secret_key);
+
+        // 5. Sign the observed outcome using Schnorr signature with the selected nonce
+        let schnorr_sig = secp.sign_schnorr_with_aux_rand(&message, &keypair, &selected_nonce);
+        println!(
+            "Oracle Schnorr Signature for Observed Outcome (0): {:?}",
+            schnorr_sig
+        );
+
+        announcements.push(OracleAnnouncement {
+            announcement_signature: schnorr_sig,
+            oracle_public_key: oracle_public_key.into(),
+            oracle_event,
+        });
+
+        println!("number of announcements: {:?}", announcements.len());
         Ok(announcements)
     }
 

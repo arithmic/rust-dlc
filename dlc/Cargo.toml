@@ -13,6 +13,8 @@ miniscript = { version = "12.2", default-features = false }
 secp256k1-sys = "0.10.0"
 secp256k1-zkp = "0.11.0"
 serde = { version = "1.0", default-features = false, optional = true }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+hex = "0.4.3"
 
 [features]
 # for benchmarks
