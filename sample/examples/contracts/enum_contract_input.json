@@ -1,6 +1,8 @@
 {
+
     "offerCollateral": 0,
     "acceptCollateral": 100000000,
+    "l2Address": "0227ef5e7f93405e424f0d488a2d592d3a7fe445",
     "feeRate": 2,
     "contractInfos": [
         {

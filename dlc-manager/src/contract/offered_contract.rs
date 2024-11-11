@@ -29,6 +29,8 @@ pub struct OfferedContract {
     /// The set of contract information that are used to generate CET and
     /// adaptor signatures.
     pub contract_info: Vec<ContractInfo>,
+    /// Counter party l2 address
+    pub l2_address: String,
     /// The public key of the counter-party's node.
     pub counter_party: PublicKey,
     /// The parameters of the offering party.
@@ -110,6 +112,7 @@ impl OfferedContract {
             id,
             is_offer_party: true,
             contract_info,
+            l2_address: contract.l2_address.clone(),
             offer_params: offer_params.clone(),
             total_collateral,
             funding_inputs: funding_inputs.to_vec(),
@@ -136,6 +139,7 @@ impl OfferedContract {
             id: offer_dlc.temporary_contract_id,
             is_offer_party: false,
             contract_info,
+            l2_address: offer_dlc.l2_address.clone(),
             offer_params: PartyParams {
                 fund_pubkey: offer_dlc.funding_pubkey,
                 change_script_pubkey: offer_dlc.change_spk.clone(),
@@ -166,6 +170,7 @@ impl From<&OfferedContract> for OfferDlc {
             contract_flags: 0,
             chain_hash: BITCOIN_CHAINHASH,
             contract_info: offered_contract.into(),
+            l2_address: offered_contract.l2_address.clone(),
             funding_pubkey: offered_contract.offer_params.fund_pubkey,
             payout_spk: offered_contract.offer_params.payout_script_pubkey.clone(),
             payout_serial_id: offered_contract.offer_params.payout_serial_id,

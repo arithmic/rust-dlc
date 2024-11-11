@@ -110,6 +110,7 @@ where
         0,
         offered_contract.cet_locktime,
         offered_contract.fund_output_serial_id,
+        offered_contract.l2_address.clone(),
     )?;
 
     let fund_output_value = dlc_transactions.get_fund_output().value;
@@ -271,6 +272,7 @@ where
         0,
         offered_contract.cet_locktime,
         offered_contract.fund_output_serial_id,
+        offered_contract.l2_address.clone(),
     )?;
     let fund_output_value = dlc_transactions.get_fund_output().value;
 

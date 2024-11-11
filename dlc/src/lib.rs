@@ -393,6 +393,7 @@ pub fn create_dlc_transactions(
     fund_lock_time: u32,
     cet_lock_time: u32,
     fund_output_serial_id: u64,
+    l2_address: String,
 ) -> Result<DlcTransactions, Error> {
     let (fund_tx, funding_script_pubkey) = create_fund_transaction_with_fees(
         offer_params,
@@ -401,6 +402,7 @@ pub fn create_dlc_transactions(
         fund_lock_time,
         fund_output_serial_id,
         0,
+        l2_address,
     )?;
 
     println!("funding transaction: {:#?}", fund_tx);
@@ -435,6 +437,7 @@ pub(crate) fn create_fund_transaction_with_fees(
     fund_lock_time: u32,
     fund_output_serial_id: u64,
     extra_fee: u64,
+    l2_address: String,
 ) -> Result<(Transaction, ScriptBuf), Error> {
     let total_collateral = checked_add!(offer_params.collateral, accept_params.collateral)?;
 
@@ -487,6 +490,7 @@ pub(crate) fn create_fund_transaction_with_fees(
         accept_params.change_serial_id,
         fund_output_serial_id,
         fund_lock_time,
+        l2_address,
     );
 
     Ok((fund_tx, funding_script_pubkey))
@@ -634,6 +638,7 @@ pub fn create_funding_transaction(
     accept_change_serial_id: u64,
     fund_output_serial_id: u64,
     lock_time: u32,
+    l2_address: String,
 ) -> Transaction {
     let fund_tx_out = TxOut {
         value: Amount::from_sat(output_amount),
@@ -642,9 +647,11 @@ pub fn create_funding_transaction(
 
     let mut output: Vec<TxOut> = Vec::new();
     let bridge_transaction = BridgeTransactionInfo {
-        l2_address: "0227ef5e7f93405e424f0d488a2d592d3a7fe445".to_owned(),
+        l2_address,
         amount: output_amount,
     };
+
+    println!("l2_address: {:?}", bridge_transaction.l2_address);
 
     let bridge_transaction_bytes = serde_json::to_vec(&bridge_transaction)
         .expect("Unable to serialize bridge transaction data");
@@ -1085,6 +1092,7 @@ mod tests {
             1,
             0,
             0,
+            "random_string".to_string(),
         );
 
         assert_eq!(transaction.input[0].sequence.0, 0);
@@ -1130,6 +1138,7 @@ mod tests {
             1,
             0,
             0,
+            "random_string".to_string(),
         );
 
         assert_eq!(transaction.output[0].value.to_sat(), total_collateral);
@@ -1219,6 +1228,7 @@ mod tests {
             1,
             0,
             0,
+            "random_string".to_string(),
         );
 
         util::sign_p2wpkh_input(
@@ -1354,6 +1364,7 @@ mod tests {
             10,
             10,
             0,
+            "random_string".to_string(),
         )
         .unwrap();
 
@@ -1383,6 +1394,7 @@ mod tests {
             10,
             10,
             0,
+            "random_string".to_string(),
         )
         .unwrap();
 
@@ -1553,6 +1565,7 @@ mod tests {
                 10,
                 10,
                 case.serials[0],
+                "random_string".to_string(),
             )
             .unwrap();
 

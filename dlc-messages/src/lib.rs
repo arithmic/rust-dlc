@@ -321,6 +321,8 @@ pub struct OfferDlc {
     pub temporary_contract_id: [u8; 32],
     /// Information about the contract event, payouts and oracles.
     pub contract_info: ContractInfo,
+    /// l2 address of the accepting party
+    pub l2_address: String,
     /// The public key of the offerer to be used to lock the collateral.
     pub funding_pubkey: PublicKey,
     /// The SPK where the offerer will receive their payout.
@@ -393,6 +395,7 @@ impl_dlc_writeable!(OfferDlc, {
         (chain_hash, writeable),
         (temporary_contract_id, writeable),
         (contract_info, writeable),
+        (l2_address, writeable),
         (funding_pubkey, writeable),
         (payout_spk, writeable),
         (payout_serial_id, writeable),

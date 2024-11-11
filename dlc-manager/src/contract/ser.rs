@@ -90,6 +90,7 @@ impl_dlc_writeable!(OfferedContract, {
     (id, writeable),
     (is_offer_party, writeable),
     (contract_info, vec),
+    (l2_address, writeable),
     (offer_params, { cb_writeable, dlc_messages::ser_impls::party_params::write, dlc_messages::ser_impls::party_params::read }),
     (total_collateral, writeable),
     (funding_inputs, vec),

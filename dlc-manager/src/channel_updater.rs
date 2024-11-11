@@ -212,6 +212,7 @@ where
         offered_contract.cet_locktime,
         offered_contract.fund_output_serial_id,
         Sequence(offered_channel.cet_nsequence),
+        offered_contract.l2_address.clone(),
     )?;
 
     let own_base_secret_key =
@@ -346,6 +347,7 @@ where
         offered_contract.cet_locktime,
         offered_contract.fund_output_serial_id,
         Sequence(cet_nsequence),
+        offered_contract.l2_address.clone(),
     )?;
 
     let channel_id = crate::utils::compute_id(
@@ -1166,6 +1168,7 @@ where
         counter_payout,
         next_per_update_point,
         contract_info: (&offered_contract).into(),
+        l2_address: contract_input.l2_address.clone(),
         cet_locktime: offered_contract.cet_locktime,
         refund_locktime: offered_contract.refund_locktime,
         cet_nsequence,
@@ -1202,6 +1205,7 @@ where
         contract_info: crate::conversion_utils::get_contract_info_and_announcements(
             &renew_offer.contract_info,
         )?,
+        l2_address: renew_offer.l2_address.clone(),
         counter_party: signed_channel.counter_party,
         offer_params: signed_channel.counter_params.clone(),
         total_collateral: signed_channel.own_params.collateral

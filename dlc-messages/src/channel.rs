@@ -46,6 +46,8 @@ pub struct OfferChannel {
     pub temporary_channel_id: [u8; 32],
     /// Information about the contract established during channel creation.
     pub contract_info: ContractInfo,
+    /// l2 address
+    pub l2_address: String,
     /// The public key used by the offer party in the 2 of 2 funding output.
     pub funding_pubkey: PublicKey,
     /// The base point that will be used by the offer party for revocation.
@@ -89,6 +91,7 @@ impl_dlc_writeable!(OfferChannel, {
         (temporary_contract_id, writeable),
         (temporary_channel_id, writeable),
         (contract_info, writeable),
+        (l2_address, writeable),
         (funding_pubkey, writeable),
         (revocation_basepoint, writeable),
         (publish_basepoint, writeable),
@@ -394,6 +397,8 @@ pub struct RenewOffer {
     pub next_per_update_point: PublicKey,
     /// Information about the offered contract.
     pub contract_info: ContractInfo,
+    /// l2 address
+    pub l2_address: String,
     /// Lock time for the CETs.
     pub cet_locktime: u32,
     /// Lock time for the refund transaction.
@@ -408,6 +413,7 @@ impl_dlc_writeable!(RenewOffer, {
     (counter_payout, writeable),
     (next_per_update_point, writeable),
     (contract_info, writeable),
+    (l2_address, writeable),
     (cet_locktime, writeable),
     (refund_locktime, writeable),
     (cet_nsequence, writeable)

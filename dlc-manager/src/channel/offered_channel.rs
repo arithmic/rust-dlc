@@ -53,6 +53,7 @@ impl OfferedChannel {
             temporary_contract_id: offered_contract.id,
             temporary_channel_id: self.temporary_channel_id,
             contract_info: offered_contract.into(),
+            l2_address: offered_contract.l2_address.clone(),
             funding_pubkey: offered_contract.offer_params.fund_pubkey,
             revocation_basepoint: party_points.revocation_basepoint,
             publish_basepoint: party_points.publish_basepoint,
@@ -104,6 +105,7 @@ impl OfferedChannel {
             contract_info: crate::conversion_utils::get_contract_info_and_announcements(
                 &offer_channel.contract_info,
             )?,
+            l2_address: offer_channel.l2_address.clone(),
             counter_party,
             offer_params: PartyParams {
                 fund_pubkey: offer_channel.funding_pubkey,

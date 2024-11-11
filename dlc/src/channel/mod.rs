@@ -241,6 +241,7 @@ pub fn create_channel_transactions(
     cet_lock_time: u32,
     fund_output_serial_id: u64,
     cet_nsequence: Sequence,
+    l2_address: String,
 ) -> Result<DlcChannelTransactions, Error> {
     let extra_fee =
         super::util::weight_to_fee(BUFFER_TX_WEIGHT + CET_EXTRA_WEIGHT, fee_rate_per_vb)?;
@@ -251,6 +252,7 @@ pub fn create_channel_transactions(
         fund_lock_time,
         fund_output_serial_id,
         extra_fee,
+        l2_address,
     )?;
 
     create_renewal_channel_transactions(
