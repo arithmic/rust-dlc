@@ -20,15 +20,14 @@ After oracle publishes the outcome, alice or bob can use the oracle signature to
 
 ### high-level flow rust-dlc sample
 
-bob proposes an offer (contract) to alice. 
-    offer dlc contains the contractinfo including the oracle outcomes and oracle's pubkey 
-alice accepts the offer
+bob proposes an offer to alice. 
+alice accepts the offer.
     create funding transaction
     dlc contracts also get created. 
-    funding transaction id
-bob after receiving the acceptance, creates the adaptor signatures for the cets
+    create adaptor signatures for the funding transaction
+bob after receiving the acceptance from alice, creates the adaptor signatures for the cets
     create funding transaction
-alice after verifying the adaptor signatures from bob, also creates the adaptor signatures for the cets
+    create adaptor signatures for the cets
 
 ## DLC contract for deposit flow: alice, bitvm federation, operator node
 
